@@ -8,10 +8,10 @@ import 'package:flutter/cupertino.dart';
 
 final Map<String, Widget Function(BuildContext)> appRoutes = {
 
-  'usuario' : ( BuildContext context) => UsuariosPage(),
+  'usuario' : ( BuildContext context) => const UsuariosPage(),
   'chat'    : ( BuildContext context) => ChatPage(),
   'login'   : ( BuildContext context) => const LoginPage(),
-  'register': ( BuildContext context) => RegisterPage(),
+  'register': ( BuildContext context) => const RegisterPage(),
   'loading' : ( BuildContext context) => LoadingPage(),
 
 };
