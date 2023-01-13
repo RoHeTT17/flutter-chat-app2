@@ -1,10 +1,14 @@
-import 'package:chat_app/widgets/boton_azul.dart';
+import 'package:chat_app/helpers/mostrar_alerta.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:chat_app/services/auth_service.dart';
 
 import 'package:chat_app/widgets/custom_logo.dart';
 import 'package:chat_app/widgets/custom_input.dart';
 import 'package:chat_app/widgets/custom_labels.dart';
 
+import 'package:chat_app/widgets/boton_azul.dart';
 
 
 class LoginPage extends StatelessWidget {
@@ -47,11 +51,15 @@ class _Form extends StatefulWidget {
 }
 
 class __FormState extends State<_Form> {
+
+  final emailCtrl = TextEditingController();
+  final pswCtrl   = TextEditingController();
+
+
   @override
   Widget build(BuildContext context) {
 
-    final emailCtrl = TextEditingController();
-    final pswCtrl = TextEditingController();
+    final authService = Provider.of<AuthService>(context);
 
     return Container(
       margin:  const EdgeInsets.only(top: 40),
@@ -72,7 +80,27 @@ class __FormState extends State<_Form> {
                                   isPassword: true,
                                   pTextController: pswCtrl ,
                                  ),  
-                      BotonAzul(textButtom: 'Ingrese', ponPressed: () => print(emailCtrl.text),),                    
+                      BotonAzul(
+                        pColor: authService.getAutenticando ? Colors.grey : Colors.blue,
+                        textButtom: 'Ingrese', 
+                        ponPressed: authService.getAutenticando 
+                                   ? null 
+                                   : () async{
+                                        //Ocultar teclado
+                                        FocusScope.of(context).unfocus();
+                                        final loginOk = await authService.login(emailCtrl.text.trim(), pswCtrl.text.trim());
+                                       
+                                       //ESto porque es un StatefullWidget
+                                        if(!mounted) return;
+
+                                        if( loginOk){
+                                          //Conectar al socketSErver
+
+                                          Navigator.pushReplacementNamed(context,'usuario');                                        }else{
+                                          mostrarAlerta(context, 'Login incorrecto', 'revisar datos');
+                                        }
+                                      }
+                      ),                    
 
 
                   ],
