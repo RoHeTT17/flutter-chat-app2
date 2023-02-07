@@ -1,8 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-
 import 'package:flutter/cupertino.dart';
+
+import 'package:provider/provider.dart';
+
+import 'package:chat_app/services/auth_service.dart';
+import 'package:chat_app/services/chat_service.dart';
+import 'package:chat_app/services/socket_service.dart';
 
 import 'package:chat_app/widgets/chat_message.dart';
 
@@ -19,14 +24,30 @@ class _ChatPageState extends State<ChatPage>  with TickerProviderStateMixin{
   final _chatTextController = TextEditingController();
   final _fousNode = FocusNode();
 
-  List<ChatMessage> _messages = [
- 
-                                ];
+  late ChatService chatService;
+  late SocketService socketService;
+  late AuthService authService;
+
+  List<ChatMessage> _messages = [];
 
   bool _estaEscribiendo = false;
 
+@override
+  void initState() {
+    super.initState();
+  
+     //listen en false, porque no se puede redibujar nada en el init state, amenos que
+     //este en un callback
+     chatService   = Provider.of<ChatService>  (context,listen: false);
+     socketService = Provider.of<SocketService>(context,listen: false);
+     authService   = Provider.of<AuthService>  (context,listen: false);
+  
+  }
+
   @override
   Widget build(BuildContext context) {
+
+  //final chatService = Provider.of<ChatService>(context,);
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
@@ -34,12 +55,18 @@ class _ChatPageState extends State<ChatPage>  with TickerProviderStateMixin{
         title: Column(
           children: [
                       CircleAvatar(
-                        child: Text('RR', style: TextStyle(fontSize: 12),),
                         backgroundColor: Colors.blue[100],
                         maxRadius: 14,
+                        child: Text(
+                                    chatService.usuarioPara.nombre.substring(0,2), 
+                                    style: const TextStyle(fontSize: 12),
+                                   ),
                       ),
-                      SizedBox(height: 3,),
-                      Text('Roger',style: TextStyle(color: Colors.black87, fontSize: 12),)
+                      const SizedBox(height: 3,),
+                      Text(
+                           chatService.usuarioPara.nombre,
+                           style: const TextStyle(color: Colors.black87, fontSize: 12),
+                          )
                     ],
         ),
       ),
@@ -146,6 +173,13 @@ class _ChatPageState extends State<ChatPage>  with TickerProviderStateMixin{
          _fousNode.requestFocus();
        
        }); 
+
+       //Armar el payload que se mandará al servidor
+       socketService.getSocket.emit('mensaje-personal',{
+        'de'  : authService.usuario.uid,//quien esta mandando el mensaje
+        'para': chatService.usuarioPara.uid,//para quien (este se carga cuando se selcciona el usuario a chatear)
+        'mensaje': texto
+       });
   }
 
   @override
